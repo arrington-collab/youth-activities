@@ -1,0 +1,250 @@
+{
+  "name": "Youth Activity SMS Reminder",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 17,
+              "triggerAtMinute": 0
+            }
+          ]
+        }
+      },
+      "id": "schedule-trigger",
+      "name": "Every Tuesday 5 PM",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [0, 0],
+      "notes": "Runs every Tuesday at 5 PM. Set your n8n instance timezone to America/Phoenix"
+    },
+    {
+      "parameters": {
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "YOUR_GOOGLE_SHEET_ID_HERE"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": "Activities"
+        },
+        "options": {
+          "range": "A:H"
+        }
+      },
+      "id": "get-activities",
+      "name": "Get Activities",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [220, 0],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "YOUR_GOOGLE_CREDENTIAL_ID",
+          "name": "Google Sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Find this week's Wednesday activity\nconst today = new Date();\nconst items = $input.all();\n\n// Find next Wednesday\nconst nextWed = new Date(today);\nconst dayOfWeek = today.getDay();\nconst daysUntilWed = (3 - dayOfWeek + 7) % 7;\nif (daysUntilWed === 0) daysUntilWed = 7; // If today is Wed, get next Wed\nnextWed.setDate(today.getDate() + daysUntilWed);\n\n// Format as YYYY-MM-DD for comparison\nconst targetDate = nextWed.toISOString().split('T')[0];\n\n// Find matching activity\nconst activity = items.find(item => {\n  const actDate = item.json.Date;\n  if (!actDate) return false;\n  // Handle different date formats\n  const normalizedDate = new Date(actDate).toISOString().split('T')[0];\n  return normalizedDate === targetDate;\n});\n\nif (!activity) {\n  return [{ json: { found: false, message: 'No activity scheduled for this Wednesday' } }];\n}\n\nreturn [{\n  json: {\n    found: true,\n    date: activity.json.Date,\n    activity: activity.json.Activity,\n    description: activity.json.Description,\n    location: activity.json.Location,\n    time: activity.json.Time || '7:00 PM',\n    contact: activity.json.Contact,\n    whatToBring: activity.json['What to Bring'],\n    theme: activity.json.Theme\n  }\n}];"
+      },
+      "id": "find-this-week",
+      "name": "Find This Week's Activity",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [440, 0]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "check-found",
+              "leftValue": "={{ $json.found }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "if-activity-found",
+      "name": "Activity Found?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.1,
+      "position": [660, 0]
+    },
+    {
+      "parameters": {
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "YOUR_GOOGLE_SHEET_ID_HERE"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": "Contacts"
+        },
+        "options": {}
+      },
+      "id": "get-contacts",
+      "name": "Get Contact List",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [880, -100],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "YOUR_GOOGLE_CREDENTIAL_ID",
+          "name": "Google Sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Build SMS message\nconst activity = $('Find This Week\\'s Activity').first().json;\nconst contacts = $input.all();\n\nlet message = `Youth Activity Tomorrow!\\n\\n`;\nmessage += `${activity.activity}\\n`;\nmessage += `${activity.time} at ${activity.location}\\n\\n`;\n\nif (activity.description) {\n  message += `${activity.description}\\n\\n`;\n}\n\nif (activity.whatToBring) {\n  message += `Bring: ${activity.whatToBring}\\n`;\n}\n\nif (activity.theme) {\n  message += `Theme: ${activity.theme}\\n`;\n}\n\nmessage += `\\nSee you there!`;\n\n// Create output for each contact\nreturn contacts.map(contact => ({\n  json: {\n    phone: contact.json.Phone,\n    name: contact.json.Name,\n    message: message\n  }\n}));"
+      },
+      "id": "build-messages",
+      "name": "Build SMS Messages",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1100, -100]
+    },
+    {
+      "parameters": {
+        "resource": "sms",
+        "operation": "send",
+        "from": "={{ $credentials.phoneNumber }}",
+        "to": "={{ $json.phone }}",
+        "text": "={{ $json.message }}"
+      },
+      "id": "send-sms",
+      "name": "Send SMS via RingCentral",
+      "type": "n8n-nodes-base.ringCentral",
+      "typeVersion": 1,
+      "position": [1320, -100],
+      "credentials": {
+        "ringCentralOAuth2Api": {
+          "id": "YOUR_RINGCENTRAL_CREDENTIAL_ID",
+          "name": "RingCentral"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "status",
+              "value": "No activity found for this Wednesday - no messages sent"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "no-activity",
+      "name": "No Activity This Week",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [880, 100]
+    }
+  ],
+  "connections": {
+    "Every Tuesday 5 PM": {
+      "main": [
+        [
+          {
+            "node": "Get Activities",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Activities": {
+      "main": [
+        [
+          {
+            "node": "Find This Week's Activity",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find This Week's Activity": {
+      "main": [
+        [
+          {
+            "node": "Activity Found?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Activity Found?": {
+      "main": [
+        [
+          {
+            "node": "Get Contact List",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Activity This Week",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Contact List": {
+      "main": [
+        [
+          {
+            "node": "Build SMS Messages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build SMS Messages": {
+      "main": [
+        [
+          {
+            "node": "Send SMS via RingCentral",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "America/Phoenix"
+  },
+  "tags": [
+    {
+      "name": "youth-activities"
+    }
+  ]
+}
