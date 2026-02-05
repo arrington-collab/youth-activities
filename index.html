@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Youth Activities</title>
+    <title>Priest Quorum Activities</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script>
@@ -31,8 +31,8 @@
         }
 
         .card-glow:hover {
-            border-color: rgba(99, 102, 241, 0.5);
-            box-shadow: 0 0 30px rgba(99, 102, 241, 0.2);
+            border-color: rgba(59, 130, 246, 0.5);
+            box-shadow: 0 0 30px rgba(59, 130, 246, 0.2);
             transform: translateY(-4px);
         }
 
@@ -47,19 +47,24 @@
         }
 
         .text-gradient {
-            background: linear-gradient(135deg, #22c55e 0%, #3b82f6 50%, #8b5cf6 100%);
+            background: linear-gradient(135deg, #22c55e 0%, #3b82f6 50%, #06b6d4 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
 
         .date-badge {
-            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            background: linear-gradient(135deg, #3b82f6 0%, #0891b2 100%);
         }
 
         .featured-badge {
             background: linear-gradient(135deg, #22c55e 0%, #10b981 100%);
             animation: pulse-glow 2s ease-in-out infinite;
+        }
+
+        .theme-badge {
+            background: rgba(6, 182, 212, 0.2);
+            color: #22d3ee;
         }
 
         @keyframes pulse-glow {
@@ -85,7 +90,7 @@
     <!-- Header -->
     <header class="py-8 px-4">
         <div class="max-w-4xl mx-auto text-center">
-            <h1 class="text-5xl md:text-6xl font-bold text-gradient mb-2">YOUTH</h1>
+            <h1 class="text-4xl md:text-5xl font-bold text-gradient mb-2">PRIEST QUORUM</h1>
             <p class="text-2xl md:text-3xl font-light text-gray-400 tracking-widest">ACTIVITIES</p>
             <div class="mt-4 inline-flex items-center gap-2 bg-white/5 px-4 py-2 rounded-full border border-white/10">
                 <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
@@ -98,7 +103,7 @@
     <main class="max-w-4xl mx-auto px-4 pb-12">
         <!-- Loading State -->
         <div id="loading" class="text-center py-20">
-            <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-purple-500 border-t-transparent"></div>
+            <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-cyan-500 border-t-transparent"></div>
             <p class="mt-6 text-gray-400 text-lg">Loading...</p>
         </div>
 
@@ -143,7 +148,7 @@
 
     <!-- Footer -->
     <footer class="text-center py-8 border-t border-white/5">
-        <p class="text-gray-600 text-sm">Questions? Hit up your youth leaders</p>
+        <p class="text-gray-600 text-sm">Questions? Hit up your priest quorum advisor</p>
     </footer>
 
     <script>
@@ -180,6 +185,28 @@
             }
 
             return new Date(dateStr);
+        }
+
+        // Parse time from Google Sheets format
+        function parseTime(timeStr) {
+            if (!timeStr) return '';
+
+            const str = timeStr.toString();
+
+            // Handle Google Sheets Date(year,month,day,hour,min,sec) format for time
+            // e.g., Date(1899,11,30,7,0,0) means 7:00 AM
+            const googleTimeFormat = /^Date\(\d+,\d+,\d+,(\d+),(\d+),(\d+)\)$/;
+            const googleMatch = str.match(googleTimeFormat);
+            if (googleMatch) {
+                let hour = parseInt(googleMatch[1]);
+                const min = parseInt(googleMatch[2]);
+                const ampm = hour >= 12 ? 'PM' : 'AM';
+                hour = hour % 12 || 12;
+                return `${hour}:${min.toString().padStart(2, '0')} ${ampm}`;
+            }
+
+            // Return as-is if it looks like a time already
+            return str;
         }
 
         // Parse Google Sheets JSON response
@@ -243,6 +270,7 @@
         // Create featured activity card
         function createFeaturedCard(activity) {
             const date = formatDate(activity.date);
+            const time = parseTime(activity.time);
             return `
                 <div class="p-6 md:p-8">
                     <div class="flex flex-col md:flex-row gap-6">
@@ -258,14 +286,14 @@
                         <!-- Activity Details -->
                         <div class="flex-1">
                             <h3 class="text-2xl md:text-3xl font-bold text-white mb-3">${activity.activity || 'Activity'}</h3>
-                            ${activity.theme ? `<span class="inline-block bg-purple-500/20 text-purple-400 text-sm font-medium px-3 py-1 rounded-full mb-4">🎯 ${activity.theme}</span>` : ''}
+                            ${activity.theme ? `<span class="inline-block theme-badge text-sm font-medium px-3 py-1 rounded-full mb-4">🎯 ${activity.theme}</span>` : ''}
                             ${activity.description ? `<p class="text-gray-400 mb-4 text-lg">${activity.description}</p>` : ''}
 
                             <div class="flex flex-wrap gap-4 text-sm">
-                                ${activity.time ? `
+                                ${time ? `
                                 <div class="flex items-center gap-2 text-gray-300">
                                     <span class="text-lg">🕐</span>
-                                    <span>${activity.time}</span>
+                                    <span>${time}</span>
                                 </div>` : ''}
 
                                 ${activity.location ? `
@@ -295,6 +323,7 @@
         // Create calendar card
         function createCalendarCard(activity) {
             const date = formatDate(activity.date);
+            const time = parseTime(activity.time);
             return `
                 <div class="card-glow rounded-xl overflow-hidden flex transition-all cursor-default">
                     <!-- Date Column -->
@@ -307,10 +336,10 @@
                     <!-- Content -->
                     <div class="p-4 flex-1">
                         <h3 class="font-bold text-white text-lg mb-1">${activity.activity || 'Activity'}</h3>
-                        ${activity.theme ? `<span class="inline-block bg-purple-500/20 text-purple-400 text-xs px-2 py-0.5 rounded-full mb-2">🎯 ${activity.theme}</span>` : ''}
+                        ${activity.theme ? `<span class="inline-block theme-badge text-xs px-2 py-0.5 rounded-full mb-2">🎯 ${activity.theme}</span>` : ''}
 
                         <div class="flex flex-wrap gap-3 text-sm text-gray-400 mt-2">
-                            ${activity.time ? `<span>🕐 ${activity.time}</span>` : ''}
+                            ${time ? `<span>🕐 ${time}</span>` : ''}
                             ${activity.location ? `<span>📍 ${activity.location}</span>` : ''}
                         </div>
 
