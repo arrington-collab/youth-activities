@@ -87,8 +87,9 @@
 
             // Get column headers - keep original case for matching
             const headers = cols.map(col => col.label || '');
+            console.log('Column headers:', headers);
 
-            return rows.map(row => {
+            const results = rows.map(row => {
                 const obj = {};
                 row.c.forEach((cell, i) => {
                     const header = headers[i];
@@ -98,7 +99,15 @@
                     }
                 });
                 return obj;
-            }).filter(row => row.date);
+            });
+
+            console.log('All parsed rows:', results);
+
+            // Filter rows that have a date
+            const filtered = results.filter(row => row.date);
+            console.log('Filtered rows with date:', filtered);
+
+            return filtered;
         }
 
         // Format date for display
@@ -275,9 +284,17 @@
                 const text = await response.text();
                 const activities = parseSheetData(text);
 
+                // Debug: log what we got
+                console.log('Raw activities:', activities);
+                console.log('First activity:', activities[0]);
+
                 // Filter to future activities and sort by date
                 const futureActivities = activities
-                    .filter(a => isFuture(a.date))
+                    .filter(a => {
+                        const hasFutureDate = isFuture(a.date);
+                        console.log('Activity:', a, 'isFuture:', hasFutureDate);
+                        return hasFutureDate;
+                    })
                     .sort((a, b) => parseDate(a.date) - parseDate(b.date));
 
                 loading.classList.add('hidden');
