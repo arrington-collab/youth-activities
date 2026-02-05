@@ -103,7 +103,10 @@
 
         // Format date for display
         function formatDate(dateStr) {
-            const date = new Date(dateStr);
+            const date = parseDate(dateStr);
+            if (!date || isNaN(date)) {
+                return { weekday: '', month: '', day: '', full: '' };
+            }
             return {
                 weekday: date.toLocaleDateString('en-US', { weekday: 'long' }),
                 month: date.toLocaleDateString('en-US', { month: 'short' }),
@@ -114,16 +117,40 @@
 
         // Check if date is this week
         function isThisWeek(dateStr) {
-            const date = new Date(dateStr);
+            const date = parseDate(dateStr);
+            if (!date || isNaN(date)) return false;
             const today = new Date();
+            today.setHours(0, 0, 0, 0);
             const nextWeek = new Date(today);
             nextWeek.setDate(today.getDate() + 7);
             return date >= today && date < nextWeek;
         }
 
+        // Parse date string (handles various formats including M/D/YY)
+        function parseDate(dateStr) {
+            if (!dateStr) return null;
+
+            // If it's already a Date object or timestamp
+            if (dateStr instanceof Date) return dateStr;
+
+            // Handle M/D/YY format (e.g., 2/11/26 -> 2026-02-11)
+            const shortFormat = /^(\d{1,2})\/(\d{1,2})\/(\d{2})$/;
+            const match = dateStr.toString().match(shortFormat);
+            if (match) {
+                let year = parseInt(match[3]);
+                // Assume 2000s for 2-digit years
+                year = year < 100 ? 2000 + year : year;
+                return new Date(year, parseInt(match[1]) - 1, parseInt(match[2]));
+            }
+
+            // Try standard parsing
+            return new Date(dateStr);
+        }
+
         // Check if date is in the future
         function isFuture(dateStr) {
-            const date = new Date(dateStr);
+            const date = parseDate(dateStr);
+            if (!date || isNaN(date)) return false;
             const today = new Date();
             today.setHours(0, 0, 0, 0);
             return date >= today;
@@ -251,7 +278,7 @@
                 // Filter to future activities and sort by date
                 const futureActivities = activities
                     .filter(a => isFuture(a.date))
-                    .sort((a, b) => new Date(a.date) - new Date(b.date));
+                    .sort((a, b) => parseDate(a.date) - parseDate(b.date));
 
                 loading.classList.add('hidden');
 
