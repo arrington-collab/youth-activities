@@ -187,6 +187,15 @@
             return new Date(dateStr);
         }
 
+        // Get map address (default Church to full address)
+        function getMapAddress(location) {
+            if (!location) return '';
+            if (location.toLowerCase() === 'church') {
+                return '10305 E Southern Ave, Mesa, AZ 85208';
+            }
+            return location;
+        }
+
         // Parse time from Google Sheets format
         function parseTime(timeStr) {
             if (!timeStr) return '';
@@ -308,7 +317,7 @@
                                 <div class="flex items-center gap-2 text-gray-300">
                                     <span class="text-lg">📍</span>
                                     <span>${activity.location}</span>
-                                    <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(activity.location)}"
+                                    <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(getMapAddress(activity.location))}"
                                        target="_blank"
                                        class="ml-2 bg-blue-500/20 hover:bg-blue-500/40 text-blue-400 text-xs px-2 py-1 rounded-full transition-all">
                                         Map →
@@ -355,7 +364,7 @@
                             ${time ? `<span>🕐 ${time}</span>` : ''}
                             ${activity.location ? `
                                 <span>📍 ${activity.location}</span>
-                                <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(activity.location)}"
+                                <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(getMapAddress(activity.location))}"
                                    target="_blank"
                                    class="bg-blue-500/20 hover:bg-blue-500/40 text-blue-400 text-xs px-2 py-0.5 rounded-full transition-all">
                                     Map →
