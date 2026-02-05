@@ -5,69 +5,145 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Youth Activities</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Inter', sans-serif; }
-        .calendar-card {
-            transition: transform 0.2s, box-shadow 0.2s;
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'space': ['Space Grotesk', 'sans-serif'],
+                    }
+                }
+            }
         }
-        .calendar-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+    </script>
+    <style>
+        body { font-family: 'Space Grotesk', sans-serif; }
+
+        .gradient-bg {
+            background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 50%, #16213e 100%);
+        }
+
+        .card-glow {
+            background: linear-gradient(145deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%);
+            border: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .card-glow:hover {
+            border-color: rgba(99, 102, 241, 0.5);
+            box-shadow: 0 0 30px rgba(99, 102, 241, 0.2);
+            transform: translateY(-4px);
+        }
+
+        .featured-glow {
+            background: linear-gradient(145deg, rgba(34, 197, 94, 0.1) 0%, rgba(59, 130, 246, 0.1) 100%);
+            border: 2px solid rgba(34, 197, 94, 0.4);
+        }
+
+        .featured-glow:hover {
+            border-color: rgba(34, 197, 94, 0.7);
+            box-shadow: 0 0 40px rgba(34, 197, 94, 0.3);
+        }
+
+        .text-gradient {
+            background: linear-gradient(135deg, #22c55e 0%, #3b82f6 50%, #8b5cf6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .date-badge {
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+        }
+
+        .featured-badge {
+            background: linear-gradient(135deg, #22c55e 0%, #10b981 100%);
+            animation: pulse-glow 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 20px rgba(34, 197, 94, 0.4); }
+            50% { box-shadow: 0 0 30px rgba(34, 197, 94, 0.7); }
+        }
+
+        .animate-float {
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .transition-all {
+            transition: all 0.3s ease;
         }
     </style>
 </head>
-<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
+<body class="gradient-bg min-h-screen text-white">
     <!-- Header -->
-    <header class="bg-white shadow-sm">
-        <div class="max-w-4xl mx-auto px-4 py-6">
-            <h1 class="text-3xl font-bold text-gray-800 text-center">Youth Activities</h1>
-            <p class="text-center text-gray-500 mt-1">Wednesdays at 7:00 PM</p>
+    <header class="py-8 px-4">
+        <div class="max-w-4xl mx-auto text-center">
+            <h1 class="text-5xl md:text-6xl font-bold text-gradient mb-2">YOUTH</h1>
+            <p class="text-2xl md:text-3xl font-light text-gray-400 tracking-widest">ACTIVITIES</p>
+            <div class="mt-4 inline-flex items-center gap-2 bg-white/5 px-4 py-2 rounded-full border border-white/10">
+                <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                <span class="text-sm text-gray-400">Wednesdays @ 7:00 PM</span>
+            </div>
         </div>
     </header>
 
     <!-- Main Content -->
-    <main class="max-w-4xl mx-auto px-4 py-8">
+    <main class="max-w-4xl mx-auto px-4 pb-12">
         <!-- Loading State -->
-        <div id="loading" class="text-center py-12">
-            <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-blue-500 border-t-transparent"></div>
-            <p class="mt-4 text-gray-600">Loading activities...</p>
+        <div id="loading" class="text-center py-20">
+            <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-purple-500 border-t-transparent"></div>
+            <p class="mt-6 text-gray-400 text-lg">Loading...</p>
         </div>
 
         <!-- Error State -->
-        <div id="error" class="hidden bg-red-50 border border-red-200 rounded-lg p-6 text-center">
-            <p class="text-red-600">Unable to load activities. Please check back later.</p>
+        <div id="error" class="hidden card-glow rounded-2xl p-8 text-center">
+            <div class="text-5xl mb-4">⚠️</div>
+            <p class="text-red-400 text-lg">Unable to load activities</p>
+            <p class="text-gray-500 mt-2">Check back later</p>
         </div>
 
         <!-- This Week's Activity (Featured) -->
         <div id="this-week" class="hidden mb-8">
-            <h2 class="text-lg font-semibold text-gray-700 mb-4 flex items-center">
-                <span class="bg-green-500 text-white text-xs px-3 py-1 rounded-full mr-2 animate-pulse">THIS WEEK</span>
-            </h2>
-            <div id="featured-activity" class="bg-white rounded-2xl shadow-lg overflow-hidden border-2 border-green-400">
+            <div class="flex items-center gap-3 mb-4">
+                <span class="featured-badge text-white text-xs font-bold px-4 py-2 rounded-full uppercase tracking-wider">
+                    This Week
+                </span>
+                <div class="flex-1 h-px bg-gradient-to-r from-green-500/50 to-transparent"></div>
+            </div>
+            <div id="featured-activity" class="featured-glow rounded-2xl overflow-hidden transition-all">
                 <!-- Filled by JavaScript -->
             </div>
         </div>
 
-        <!-- Calendar View -->
+        <!-- Upcoming Activities -->
         <div id="calendar" class="hidden">
-            <h2 class="text-lg font-semibold text-gray-700 mb-4">Upcoming Activities</h2>
+            <div class="flex items-center gap-3 mb-6">
+                <span class="text-gray-400 text-sm font-medium uppercase tracking-wider">Coming Up</span>
+                <div class="flex-1 h-px bg-gradient-to-r from-white/20 to-transparent"></div>
+            </div>
             <div id="calendar-grid" class="grid gap-4">
                 <!-- Filled by JavaScript -->
             </div>
         </div>
 
         <!-- No Activities -->
-        <div id="no-activities" class="hidden text-center py-12">
-            <div class="text-6xl mb-4">📅</div>
-            <p class="text-gray-500 text-lg">No upcoming activities scheduled.</p>
-            <p class="text-gray-400 mt-2">Check back soon!</p>
+        <div id="no-activities" class="hidden text-center py-20">
+            <div class="text-7xl mb-6 animate-float">📅</div>
+            <p class="text-gray-400 text-xl">No upcoming activities</p>
+            <p class="text-gray-600 mt-2">Check back soon</p>
         </div>
     </main>
 
     <!-- Footer -->
-    <footer class="text-center py-6 text-gray-400 text-sm">
-        <p>Questions? Contact your youth leaders</p>
+    <footer class="text-center py-8 border-t border-white/5">
+        <p class="text-gray-600 text-sm">Questions? Hit up your youth leaders</p>
     </footer>
 
     <script>
@@ -75,6 +151,36 @@
         const SHEET_ID = '1lNGJKQ7R-ophOgRUtxeYvS6_iXheaeM9LhEYuncOr7g';
         const SHEET_NAME = 'Activities';
         const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${SHEET_NAME}`;
+
+        // Parse date string (handles various formats including Google Sheets Date())
+        function parseDate(dateStr) {
+            if (!dateStr) return null;
+            if (dateStr instanceof Date) return dateStr;
+
+            const str = dateStr.toString();
+
+            // Handle Google Sheets Date(year,month,day) format
+            const googleFormat = /^Date\((\d+),(\d+),(\d+)\)$/;
+            const googleMatch = str.match(googleFormat);
+            if (googleMatch) {
+                return new Date(
+                    parseInt(googleMatch[1]),
+                    parseInt(googleMatch[2]),
+                    parseInt(googleMatch[3])
+                );
+            }
+
+            // Handle M/D/YY format
+            const shortFormat = /^(\d{1,2})\/(\d{1,2})\/(\d{2})$/;
+            const shortMatch = str.match(shortFormat);
+            if (shortMatch) {
+                let year = parseInt(shortMatch[3]);
+                year = year < 100 ? 2000 + year : year;
+                return new Date(year, parseInt(shortMatch[1]) - 1, parseInt(shortMatch[2]));
+            }
+
+            return new Date(dateStr);
+        }
 
         // Parse Google Sheets JSON response
         function parseSheetData(text) {
@@ -84,30 +190,20 @@
 
             const rows = json.table.rows;
             const cols = json.table.cols;
-
-            // Get column headers - keep original case for matching
             const headers = cols.map(col => col.label || '');
-            console.log('Column headers:', headers);
 
             const results = rows.map(row => {
                 const obj = {};
                 row.c.forEach((cell, i) => {
                     const header = headers[i];
                     if (header) {
-                        // Store with lowercase key for easy access
                         obj[header.toLowerCase()] = cell?.v || '';
                     }
                 });
                 return obj;
             });
 
-            console.log('All parsed rows:', results);
-
-            // Filter rows that have a date
-            const filtered = results.filter(row => row.date);
-            console.log('Filtered rows with date:', filtered);
-
-            return filtered;
+            return results.filter(row => row.date);
         }
 
         // Format date for display
@@ -117,8 +213,8 @@
                 return { weekday: '', month: '', day: '', full: '' };
             }
             return {
-                weekday: date.toLocaleDateString('en-US', { weekday: 'long' }),
-                month: date.toLocaleDateString('en-US', { month: 'short' }),
+                weekday: date.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase(),
+                month: date.toLocaleDateString('en-US', { month: 'short' }).toUpperCase(),
                 day: date.getDate(),
                 full: date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })
             };
@@ -135,40 +231,6 @@
             return date >= today && date < nextWeek;
         }
 
-        // Parse date string (handles various formats including Google Sheets Date())
-        function parseDate(dateStr) {
-            if (!dateStr) return null;
-
-            // If it's already a Date object
-            if (dateStr instanceof Date) return dateStr;
-
-            const str = dateStr.toString();
-
-            // Handle Google Sheets Date(year,month,day) format
-            // e.g., "Date(2026,1,11)" means Feb 11, 2026 (month is 0-indexed)
-            const googleFormat = /^Date\((\d+),(\d+),(\d+)\)$/;
-            const googleMatch = str.match(googleFormat);
-            if (googleMatch) {
-                return new Date(
-                    parseInt(googleMatch[1]),  // year
-                    parseInt(googleMatch[2]),  // month (0-indexed)
-                    parseInt(googleMatch[3])   // day
-                );
-            }
-
-            // Handle M/D/YY format (e.g., 2/11/26 -> 2026-02-11)
-            const shortFormat = /^(\d{1,2})\/(\d{1,2})\/(\d{2})$/;
-            const shortMatch = str.match(shortFormat);
-            if (shortMatch) {
-                let year = parseInt(shortMatch[3]);
-                year = year < 100 ? 2000 + year : year;
-                return new Date(year, parseInt(shortMatch[1]) - 1, parseInt(shortMatch[2]));
-            }
-
-            // Try standard parsing
-            return new Date(dateStr);
-        }
-
         // Check if date is in the future
         function isFuture(dateStr) {
             const date = parseDate(dateStr);
@@ -182,57 +244,48 @@
         function createFeaturedCard(activity) {
             const date = formatDate(activity.date);
             return `
-                <div class="bg-gradient-to-r from-green-50 to-blue-50 p-6">
+                <div class="p-6 md:p-8">
                     <div class="flex flex-col md:flex-row gap-6">
                         <!-- Date Badge -->
                         <div class="flex-shrink-0">
-                            <div class="bg-white rounded-xl shadow-md p-4 text-center w-24">
-                                <div class="text-xs font-semibold text-green-600 uppercase">${date.month}</div>
-                                <div class="text-3xl font-bold text-gray-800">${date.day}</div>
-                                <div class="text-xs text-gray-500">${date.weekday}</div>
+                            <div class="featured-badge rounded-2xl p-5 text-center min-w-[100px]">
+                                <div class="text-xs font-bold opacity-80">${date.month}</div>
+                                <div class="text-4xl font-bold">${date.day}</div>
+                                <div class="text-xs font-medium opacity-80">${date.weekday}</div>
                             </div>
                         </div>
 
                         <!-- Activity Details -->
                         <div class="flex-1">
-                            <h3 class="text-2xl font-bold text-gray-800 mb-2">${activity.activity || 'Activity'}</h3>
-                            ${activity.theme ? `<span class="inline-block bg-purple-100 text-purple-700 text-xs font-semibold px-3 py-1 rounded-full mb-3">Theme: ${activity.theme}</span>` : ''}
-                            ${activity.description ? `<p class="text-gray-600 mb-4">${activity.description}</p>` : ''}
+                            <h3 class="text-2xl md:text-3xl font-bold text-white mb-3">${activity.activity || 'Activity'}</h3>
+                            ${activity.theme ? `<span class="inline-block bg-purple-500/20 text-purple-400 text-sm font-medium px-3 py-1 rounded-full mb-4">🎯 ${activity.theme}</span>` : ''}
+                            ${activity.description ? `<p class="text-gray-400 mb-4 text-lg">${activity.description}</p>` : ''}
 
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                            <div class="flex flex-wrap gap-4 text-sm">
                                 ${activity.time ? `
-                                <div class="flex items-center text-gray-600">
-                                    <svg class="w-5 h-5 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                    </svg>
-                                    ${activity.time}
+                                <div class="flex items-center gap-2 text-gray-300">
+                                    <span class="text-lg">🕐</span>
+                                    <span>${activity.time}</span>
                                 </div>` : ''}
 
                                 ${activity.location ? `
-                                <div class="flex items-center text-gray-600">
-                                    <svg class="w-5 h-5 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                    </svg>
-                                    ${activity.location}
+                                <div class="flex items-center gap-2 text-gray-300">
+                                    <span class="text-lg">📍</span>
+                                    <span>${activity.location}</span>
                                 </div>` : ''}
 
                                 ${activity.contact ? `
-                                <div class="flex items-center text-gray-600">
-                                    <svg class="w-5 h-5 mr-2 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-                                    </svg>
-                                    ${activity.contact}
-                                </div>` : ''}
-
-                                ${activity['what to bring'] ? `
-                                <div class="flex items-center text-orange-600 font-medium">
-                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-                                    </svg>
-                                    Bring: ${activity['what to bring']}
+                                <div class="flex items-center gap-2 text-gray-300">
+                                    <span class="text-lg">👤</span>
+                                    <span>${activity.contact}</span>
                                 </div>` : ''}
                             </div>
+
+                            ${activity['what to bring'] ? `
+                            <div class="mt-4 flex items-center gap-2 text-amber-400 font-medium">
+                                <span class="text-lg">🎒</span>
+                                <span>Bring: ${activity['what to bring']}</span>
+                            </div>` : ''}
                         </div>
                     </div>
                 </div>
@@ -243,39 +296,27 @@
         function createCalendarCard(activity) {
             const date = formatDate(activity.date);
             return `
-                <div class="calendar-card bg-white rounded-xl shadow-md overflow-hidden flex">
+                <div class="card-glow rounded-xl overflow-hidden flex transition-all cursor-default">
                     <!-- Date Column -->
-                    <div class="bg-gradient-to-b from-blue-500 to-indigo-600 text-white p-4 flex flex-col items-center justify-center min-w-[80px]">
-                        <div class="text-xs font-semibold uppercase opacity-80">${date.month}</div>
+                    <div class="date-badge text-white p-4 flex flex-col items-center justify-center min-w-[80px]">
+                        <div class="text-xs font-bold opacity-80">${date.month}</div>
                         <div class="text-3xl font-bold">${date.day}</div>
-                        <div class="text-xs opacity-80">${date.weekday.slice(0,3)}</div>
+                        <div class="text-xs opacity-80">${date.weekday}</div>
                     </div>
 
                     <!-- Content -->
                     <div class="p-4 flex-1">
-                        <h3 class="font-bold text-gray-800 mb-1">${activity.activity || 'Activity'}</h3>
-                        ${activity.theme ? `<span class="inline-block bg-purple-100 text-purple-700 text-xs px-2 py-0.5 rounded-full mb-2">Theme: ${activity.theme}</span>` : ''}
+                        <h3 class="font-bold text-white text-lg mb-1">${activity.activity || 'Activity'}</h3>
+                        ${activity.theme ? `<span class="inline-block bg-purple-500/20 text-purple-400 text-xs px-2 py-0.5 rounded-full mb-2">🎯 ${activity.theme}</span>` : ''}
 
-                        <div class="flex flex-wrap gap-3 text-sm text-gray-500 mt-2">
-                            ${activity.time ? `
-                            <div class="flex items-center">
-                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                </svg>
-                                ${activity.time}
-                            </div>` : ''}
-                            ${activity.location ? `
-                            <div class="flex items-center">
-                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                                </svg>
-                                ${activity.location}
-                            </div>` : ''}
+                        <div class="flex flex-wrap gap-3 text-sm text-gray-400 mt-2">
+                            ${activity.time ? `<span>🕐 ${activity.time}</span>` : ''}
+                            ${activity.location ? `<span>📍 ${activity.location}</span>` : ''}
                         </div>
 
                         ${activity['what to bring'] ? `
-                        <div class="mt-2 text-xs text-orange-600 font-medium">
-                            Bring: ${activity['what to bring']}
+                        <div class="mt-2 text-xs text-amber-400">
+                            🎒 Bring: ${activity['what to bring']}
                         </div>` : ''}
                     </div>
                 </div>
@@ -297,17 +338,8 @@
                 const text = await response.text();
                 const activities = parseSheetData(text);
 
-                // Debug: log what we got
-                console.log('Raw activities:', activities);
-                console.log('First activity:', activities[0]);
-
-                // Filter to future activities and sort by date
                 const futureActivities = activities
-                    .filter(a => {
-                        const hasFutureDate = isFuture(a.date);
-                        console.log('Activity:', a, 'isFuture:', hasFutureDate);
-                        return hasFutureDate;
-                    })
+                    .filter(a => isFuture(a.date))
                     .sort((a, b) => parseDate(a.date) - parseDate(b.date));
 
                 loading.classList.add('hidden');
@@ -317,17 +349,14 @@
                     return;
                 }
 
-                // Find this week's activity
                 const thisWeekActivity = futureActivities.find(a => isThisWeek(a.date));
                 const otherActivities = futureActivities.filter(a => a !== thisWeekActivity);
 
-                // Show this week's activity
                 if (thisWeekActivity) {
                     thisWeekSection.classList.remove('hidden');
                     featuredActivity.innerHTML = createFeaturedCard(thisWeekActivity);
                 }
 
-                // Show calendar of upcoming activities
                 if (otherActivities.length > 0) {
                     calendar.classList.remove('hidden');
                     calendarGrid.innerHTML = otherActivities
@@ -343,10 +372,7 @@
             }
         }
 
-        // Load activities when page loads
         document.addEventListener('DOMContentLoaded', loadActivities);
-
-        // Refresh every 5 minutes
         setInterval(loadActivities, 5 * 60 * 1000);
     </script>
 </body>
