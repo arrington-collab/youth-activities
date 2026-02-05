@@ -194,15 +194,23 @@
             const str = timeStr.toString();
 
             // Handle Google Sheets Date(year,month,day,hour,min,sec) format for time
-            // e.g., Date(1899,11,30,7,0,0) means 7:00 AM
+            // e.g., Date(1899,11,30,7,0,0) means 7:00
             const googleTimeFormat = /^Date\(\d+,\d+,\d+,(\d+),(\d+),(\d+)\)$/;
             const googleMatch = str.match(googleTimeFormat);
             if (googleMatch) {
                 let hour = parseInt(googleMatch[1]);
                 const min = parseInt(googleMatch[2]);
-                const ampm = hour >= 12 ? 'PM' : 'AM';
-                hour = hour % 12 || 12;
-                return `${hour}:${min.toString().padStart(2, '0')} ${ampm}`;
+                // Youth activities are in the evening, so assume PM for hours 1-11
+                let ampm;
+                if (hour >= 12) {
+                    ampm = 'PM';
+                } else if (hour >= 1 && hour <= 11) {
+                    ampm = 'PM'; // Assume evening activities
+                } else {
+                    ampm = 'AM';
+                }
+                const displayHour = hour % 12 || 12;
+                return `${displayHour}:${min.toString().padStart(2, '0')} ${ampm}`;
             }
 
             // Return as-is if it looks like a time already
