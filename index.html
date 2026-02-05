@@ -135,21 +135,34 @@
             return date >= today && date < nextWeek;
         }
 
-        // Parse date string (handles various formats including M/D/YY)
+        // Parse date string (handles various formats including Google Sheets Date())
         function parseDate(dateStr) {
             if (!dateStr) return null;
 
-            // If it's already a Date object or timestamp
+            // If it's already a Date object
             if (dateStr instanceof Date) return dateStr;
+
+            const str = dateStr.toString();
+
+            // Handle Google Sheets Date(year,month,day) format
+            // e.g., "Date(2026,1,11)" means Feb 11, 2026 (month is 0-indexed)
+            const googleFormat = /^Date\((\d+),(\d+),(\d+)\)$/;
+            const googleMatch = str.match(googleFormat);
+            if (googleMatch) {
+                return new Date(
+                    parseInt(googleMatch[1]),  // year
+                    parseInt(googleMatch[2]),  // month (0-indexed)
+                    parseInt(googleMatch[3])   // day
+                );
+            }
 
             // Handle M/D/YY format (e.g., 2/11/26 -> 2026-02-11)
             const shortFormat = /^(\d{1,2})\/(\d{1,2})\/(\d{2})$/;
-            const match = dateStr.toString().match(shortFormat);
-            if (match) {
-                let year = parseInt(match[3]);
-                // Assume 2000s for 2-digit years
+            const shortMatch = str.match(shortFormat);
+            if (shortMatch) {
+                let year = parseInt(shortMatch[3]);
                 year = year < 100 ? 2000 + year : year;
-                return new Date(year, parseInt(match[1]) - 1, parseInt(match[2]));
+                return new Date(year, parseInt(shortMatch[1]) - 1, parseInt(shortMatch[2]));
             }
 
             // Try standard parsing
